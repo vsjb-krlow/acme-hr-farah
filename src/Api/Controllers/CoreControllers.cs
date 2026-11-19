@@ -30,7 +30,12 @@ public class EmployeesController(AcmeDb db, LeaveService leave, AccessService ac
         await db.Employees.FindAsync(id) is { } e ? Ok(e) : Problem(statusCode: 404, title: $"Employee {id} not found");
 
     [HttpGet("{id:int}/summary")]
-    public async Task<IActionResult> Summary(int id) => Ok(new { employeeId = id, daysTakenThisYear = await leave.DaysTakenThisYearAsync(id) });
+    public async Task<IActionResult> Summary(int id)
+    {
+        if (!await access.CanSeeEmployeeAsync(User, id)) return Problem(statusCode: 403, title: "You can only see your own or your team's leave");
+        if (await db.Employees.FindAsync(id) is null) return Problem(statusCode: 404, title: $"Employee {id} not found");
+        return Ok(new { employeeId = id, daysTakenThisYear = await leave.DaysTakenThisYearAsync(id) });
+    }
 
     [HttpGet("{id:int}/balance")]
     public async Task<IActionResult> Balance(int id)

@@ -32,7 +32,7 @@ public class LeaveService(AcmeDb db)
     {
         var year = DateTime.UtcNow.Year;
         var requests = await db.LeaveRequests
-            .Where(r => r.EmployeeId == employeeId && r.StartDate.Year == year)
+            .Where(r => r.EmployeeId == employeeId && r.StartDate.Year == year && r.Status == LeaveStatus.Approved)
             .ToListAsync();
         return requests.Sum(DaysOf);
     }
